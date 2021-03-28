@@ -20,6 +20,7 @@ import androidx.compose.ui.res.stringResource
 import com.meteoro.jetnews.R
 import com.meteoro.jetnews.data.posts.PostsRepository
 import com.meteoro.jetnews.model.Post
+import com.meteoro.jetnews.ui.AppDrawer
 import com.meteoro.jetnews.ui.Screen
 import com.meteoro.jetnews.ui.state.UiState
 import com.meteoro.jetnews.utils.produceUiState
@@ -110,10 +111,16 @@ fun HomeScreen(
     }
 
     onToggleFavorite("")
-    navigateTo(Screen.Home)
     val coroutineScope = rememberCoroutineScope()
     Scaffold(
         scaffoldState = scaffoldState,
+        drawerContent = {
+            AppDrawer(
+                currentScreen = Screen.Home,
+                closeDrawer = { coroutineScope.launch { scaffoldState.drawerState.close() } },
+                navigateTo = navigateTo
+            )
+        },
         topBar = {
             val title = stringResource(id = R.string.app_name)
             TopAppBar(
