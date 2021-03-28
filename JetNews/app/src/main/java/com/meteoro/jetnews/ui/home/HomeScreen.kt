@@ -1,10 +1,13 @@
 package com.meteoro.jetnews.ui.home
 
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Scaffold
 import androidx.compose.material.ScaffoldState
 import androidx.compose.material.SnackbarResult
 import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -12,6 +15,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.meteoro.jetnews.R
 import com.meteoro.jetnews.data.posts.PostsRepository
@@ -107,8 +111,23 @@ fun HomeScreen(
 
     onToggleFavorite("")
     navigateTo(Screen.Home)
-//    val coroutineScope = rememberCoroutineScope()
+    val coroutineScope = rememberCoroutineScope()
     Scaffold(
+        scaffoldState = scaffoldState,
+        topBar = {
+            val title = stringResource(id = R.string.app_name)
+            TopAppBar(
+                title = { Text(text = title) },
+                navigationIcon = {
+                    IconButton(onClick = { coroutineScope.launch { scaffoldState.drawerState.open() } }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_jetnews_logo),
+                            contentDescription = stringResource(id = R.string.cd_open_navigation_drawer)
+                        )
+                    }
+                }
+            )
+        },
         content = {
             Text(text = "Eu: ${favorites.size}")
         }
