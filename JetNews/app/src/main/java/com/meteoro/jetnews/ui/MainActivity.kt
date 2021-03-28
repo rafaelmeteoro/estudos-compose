@@ -1,4 +1,4 @@
-package com.meteoro.jetnews
+package com.meteoro.jetnews.ui
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
