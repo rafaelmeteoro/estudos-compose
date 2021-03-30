@@ -44,7 +44,11 @@ private fun AppContent(
                     navigateTo = navigationViewModel::navigateTo,
                     interestsRepository = interestsRepository
                 )
-                is Screen.Article -> ArticleScreen()
+                is Screen.Article -> ArticleScreen(
+                    postId = screen.postId,
+                    postsRepository = postsRepository,
+                    onBack = { navigationViewModel.onBack() }
+                )
             }
         }
     }
