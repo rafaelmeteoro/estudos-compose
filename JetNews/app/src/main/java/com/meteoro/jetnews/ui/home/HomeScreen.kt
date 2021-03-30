@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
@@ -137,7 +139,6 @@ fun HomeScreen(
         }
     }
 
-    onToggleFavorite("")
     val coroutineScope = rememberCoroutineScope()
     Scaffold(
         scaffoldState = scaffoldState,
@@ -276,12 +277,11 @@ private fun PostList(
     val postsPopular = posts.subList(2, 7)
     val postHistory = posts.subList(7, 10)
 
-    postsPopular.size
-    postHistory.size
-
     LazyColumn(modifier = modifier) {
         item { PostListTopSection(postTop, navigateTo) }
         item { PostListSimpleSection(postsSimple, navigateTo, favorites, onToggleFavorite) }
+        item { PostListPopularSection(postsPopular, navigateTo) }
+        item { PostListHistorySection(postHistory, navigateTo) }
     }
 }
 
@@ -340,6 +340,46 @@ private fun PostListSimpleSection(
                 isFavorite = favorites.contains(post.id),
                 onToggleFavorite = { onToggleFavorite(post.id) }
             )
+            PostListDivider()
+        }
+    }
+}
+
+/**
+ * Horizontal scrolling cards for [PostList]
+ *
+ * @param posts (state) to display
+ * @param navigateTo (event) request navigation to [Screen]
+ * */
+@Composable
+private fun PostListPopularSection(
+    posts: List<Post>,
+    navigateTo: (Screen) -> Unit
+) {
+    Column {
+        Text(
+            modifier = Modifier.padding(16.dp),
+            text = "Popular on JetNews",
+            style = MaterialTheme.typography.subtitle1
+        )
+
+        LazyRow(modifier = Modifier.padding(end = 16.dp)) {
+            items(posts) { post ->
+                PostCardPopular(post, navigateTo, Modifier.padding(start = 16.dp, bottom = 16.dp))
+            }
+        }
+        PostListDivider()
+    }
+}
+
+@Composable
+private fun PostListHistorySection(
+    posts: List<Post>,
+    navigateTo: (Screen) -> Unit
+) {
+    Column {
+        posts.forEach { post ->
+            PostCardHistory(post, navigateTo)
             PostListDivider()
         }
     }

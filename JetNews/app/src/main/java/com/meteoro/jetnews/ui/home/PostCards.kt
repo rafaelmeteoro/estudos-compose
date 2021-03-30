@@ -11,10 +11,12 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconToggleButton
 import androidx.compose.material.LocalContentAlpha
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
@@ -33,6 +35,7 @@ import com.meteoro.jetnews.data.posts.impl.post3
 import com.meteoro.jetnews.model.Post
 import com.meteoro.jetnews.ui.Screen
 import com.meteoro.jetnews.ui.ThemedPreview
+import java.nio.file.WatchEvent
 
 @Composable
 fun AuthorAndReadTime(
@@ -108,6 +111,42 @@ fun PostCardSimple(
 }
 
 @Composable
+fun PostCardHistory(
+    post: Post,
+    navigateTo: (Screen) -> Unit
+) {
+    Row(
+        Modifier
+            .clickable(onClick = { navigateTo(Screen.Article(post.id)) })
+            .padding(16.dp)
+    ) {
+        PostImage(
+            post = post,
+            modifier = Modifier.padding(end = 16.dp)
+        )
+        Column(Modifier.weight(1f)) {
+            CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
+                Text(
+                    text = "BASED ON YOUR HISTORY",
+                    style = MaterialTheme.typography.overline
+                )
+            }
+            PostTitle(post = post)
+            AuthorAndReadTime(
+                post = post,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+        }
+        CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
+            Icon(
+                imageVector = Icons.Filled.MoreVert,
+                contentDescription = stringResource(R.string.cd_more_actions)
+            )
+        }
+    }
+}
+
+@Composable
 fun BookmarkButton(
     isBookmarked: Boolean,
     onClick: () -> Unit,
@@ -130,10 +169,46 @@ fun BookmarkButton(
     }
 }
 
+@Preview("Bookmark Button")
+@Composable
+fun BookmarkButtonPreview() {
+    ThemedPreview {
+        Surface {
+            BookmarkButton(isBookmarked = false, onClick = {})
+        }
+    }
+}
+
+@Preview("Bookmark Button Bookmarked")
+@Composable
+fun BookmarkButtonBookmarkedPreview() {
+    ThemedPreview {
+        Surface {
+            BookmarkButton(isBookmarked = true, onClick = {})
+        }
+    }
+}
+
 @Preview("Simple post card")
 @Composable
 fun SimplePostPreview() {
     ThemedPreview {
         PostCardSimple(post3, {}, false, {})
+    }
+}
+
+@Preview("Simple post card dark theme")
+@Composable
+fun SimplePostDarkPreview() {
+    ThemedPreview(darkTheme = true) {
+        PostCardSimple(post3, {}, false, {})
+    }
+}
+
+@Preview("Post History card")
+@Composable
+fun HistoryPostPreview() {
+    ThemedPreview {
+        PostCardHistory(post3, {})
     }
 }

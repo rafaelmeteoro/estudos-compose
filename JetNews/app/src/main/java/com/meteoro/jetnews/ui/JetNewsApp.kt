@@ -8,7 +8,9 @@ import androidx.compose.runtime.Composable
 import com.meteoro.jetnews.data.AppContainer
 import com.meteoro.jetnews.data.interests.InterestsRepository
 import com.meteoro.jetnews.data.posts.PostsRepository
+import com.meteoro.jetnews.ui.article.ArticleScreen
 import com.meteoro.jetnews.ui.home.HomeScreen
+import com.meteoro.jetnews.ui.interests.InterestsScreen
 import com.meteoro.jetnews.ui.theme.JetNewsTheme
 
 @Composable
@@ -32,13 +34,14 @@ private fun AppContent(
     interestsRepository: InterestsRepository
 ) {
     Crossfade(navigationViewModel.currentScreen) { screen ->
-        interestsRepository.also { }
         Surface(color = MaterialTheme.colors.background) {
             when (screen) {
                 is Screen.Home -> HomeScreen(
                     navigateTo = navigationViewModel::navigateTo,
                     postsRepository = postsRepository
                 )
+                is Screen.Interests -> InterestsScreen()
+                is Screen.Article -> ArticleScreen()
             }
         }
     }
