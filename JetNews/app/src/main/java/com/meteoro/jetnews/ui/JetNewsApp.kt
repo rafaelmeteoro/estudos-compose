@@ -40,7 +40,10 @@ private fun AppContent(
                     navigateTo = navigationViewModel::navigateTo,
                     postsRepository = postsRepository
                 )
-                is Screen.Interests -> InterestsScreen()
+                is Screen.Interests -> InterestsScreen(
+                    navigateTo = navigationViewModel::navigateTo,
+                    interestsRepository = interestsRepository
+                )
                 is Screen.Article -> ArticleScreen()
             }
         }
