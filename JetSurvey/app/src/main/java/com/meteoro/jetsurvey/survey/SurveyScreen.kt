@@ -54,7 +54,20 @@ fun SurveyQuestionsScreen(
                     onBackPressed = onBackPressed
                 )
             },
-            content = {},
+            content = { innerPadding ->
+                Question(
+                    question = questionState.question,
+                    answer = questionState.answer,
+                    onAnswer = {
+                        questionState.answer = it
+                        questionState.enableNext = true
+                    },
+                    onAction = onAction,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                )
+            },
             bottomBar = {
                 SurveyBottomBar(
                     questionState = questionState,
