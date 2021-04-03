@@ -1,4 +1,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
+import com.meteoro.jetsurvey.buildsrc.Libs
+import com.meteoro.jetsurvey.buildsrc.Versions
+
 buildscript {
     ext {
         compose_version = '1.0.0-beta01'
@@ -6,13 +9,49 @@ buildscript {
     repositories {
         google()
         mavenCentral()
+        jcenter()
     }
     dependencies {
-        classpath "com.android.tools.build:gradle:7.0.0-alpha12"
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.30"
+        classpath Libs.androidGradlePlugin
+        classpath Libs.Kotlin.gradlePlugin
+    }
+}
 
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
+subprojects {
+    repositories {
+        google()
+        mavenCentral()
+        jcenter()
+
+        if (Libs.AndroidX.Compose.version.endsWith('SNAPSHOT')) {
+            maven { url Libs.AndroidX.Compose.snapshotUrl }
+            maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+        }
+    }
+
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+        kotlinOptions {
+            // Treat all Kotlin warnings as errors
+            allWarningsAsErrors = false
+
+            freeCompilerArgs += '-Xopt-in=kotlin.RequiresOptIn'
+
+            // Enable experimental coroutines APIs, including Flow
+            freeCompilerArgs += '-Xopt-in=kotlinx.coroutines.ExperimentalCoroutinesApi'
+            freeCompilerArgs += '-Xopt-in=kotlinx.coroutines.FlowPreview'
+            freeCompilerArgs += '-Xopt-in=kotlin.Experimental'
+
+            // Set JVM target to 1.8
+            jvmTarget = "1.8"
+        }
+    }
+    // Forcing to use the snapshot version
+    configurations.configureEach {
+        resolutionStrategy.eachDependency { details ->
+            if (details.requested.group.startsWith('androidx.compose')) {
+                details.useVersion Libs.AndroidX.Compose.version
+            }
+        }
     }
 }
 
