@@ -39,7 +39,14 @@ class SurveyFragment : Fragment() {
                 JetSurveyTheme {
                     viewModel.uiState.observeAsState().value?.let { surveyState ->
                         when (surveyState) {
-                            is SurveyState.Questions -> Text(text = "Questions")
+                            is SurveyState.Questions -> SurveyQuestionsScreen(
+                                questions = surveyState,
+                                onAction = { id, action -> handleSurveyAction(id, action) },
+                                onDonePressed = { viewModel.computeResult(surveyState) },
+                                onBackPressed = {
+                                    activity?.onBackPressedDispatcher?.onBackPressed()
+                                }
+                            )
                             is SurveyState.Result -> Text(text = "Result")
                         }
                     }
