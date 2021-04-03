@@ -6,8 +6,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Button
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Icon
@@ -77,6 +79,61 @@ fun SurveyQuestionsScreen(
                 )
             }
         )
+    }
+}
+
+@Composable
+fun SurveyResultScreen(
+    result: SurveyState.Result,
+    onDonePressed: () -> Unit
+) {
+    Surface(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            content = { innerPadding ->
+                val modifier = Modifier.padding(innerPadding)
+                SurveyResult(result = result, modifier = modifier)
+            },
+            bottomBar = {
+                OutlinedButton(
+                    onClick = { onDonePressed() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 24.dp)
+                ) {
+                    Text(text = stringResource(id = R.string.done))
+                }
+            }
+        )
+    }
+}
+
+@Composable
+private fun SurveyResult(
+    result: SurveyState.Result,
+    modifier: Modifier = Modifier
+) {
+    LazyColumn(modifier = modifier.fillMaxSize()) {
+        item {
+            Spacer(modifier = Modifier.height(44.dp))
+            Text(
+                text = result.surveyResult.library,
+                style = MaterialTheme.typography.h3,
+                modifier = Modifier.padding(horizontal = 20.dp)
+            )
+            Text(
+                text = stringResource(
+                    result.surveyResult.result,
+                    result.surveyResult.library
+                ),
+                style =  MaterialTheme.typography.subtitle1,
+                modifier = Modifier.padding(20.dp)
+            )
+            Text(
+                text = stringResource(result.surveyResult.description),
+                style = MaterialTheme.typography.body1,
+                modifier = Modifier.padding(horizontal = 20.dp)
+            )
+        }
     }
 }
 

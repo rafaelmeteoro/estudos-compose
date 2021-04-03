@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.material.Text
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
@@ -47,7 +46,12 @@ class SurveyFragment : Fragment() {
                                     activity?.onBackPressedDispatcher?.onBackPressed()
                                 }
                             )
-                            is SurveyState.Result -> Text(text = "Result")
+                            is SurveyState.Result -> SurveyResultScreen(
+                                result = surveyState,
+                                onDonePressed = {
+                                    activity?.onBackPressedDispatcher?.onBackPressed()
+                                }
+                            )
                         }
                     }
                 }
