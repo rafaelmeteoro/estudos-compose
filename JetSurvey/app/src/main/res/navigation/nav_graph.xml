@@ -9,4 +9,9 @@
         android:name="com.meteoro.jetsurvey.signinsignup.WelcomeFragment"
         android:label="Welcome" />
 
+    <fragment
+        android:id="@+id/sign_in_fragment"
+        android:name="com.meteoro.jetsurvey.signinsignup.SignInFragment"
+        android:label="Sign in" />
+
 </navigation>
