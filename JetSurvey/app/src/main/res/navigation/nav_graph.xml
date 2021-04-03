@@ -14,4 +14,9 @@
         android:name="com.meteoro.jetsurvey.signinsignup.SignInFragment"
         android:label="Sign in" />
 
+    <fragment
+        android:id="@+id/survey_fragment"
+        android:name="com.meteoro.jetsurvey.survey.SurveyFragment"
+        android:label="Survey" />
+
 </navigation>
