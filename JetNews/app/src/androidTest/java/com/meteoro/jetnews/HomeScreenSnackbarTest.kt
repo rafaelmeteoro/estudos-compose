@@ -30,7 +30,7 @@ class HomeScreenSnackbarTest {
         ExperimentalMaterialApi::class,
         ExperimentalComposeApi::class
     )
-    // @Ignore("TODO Investigate why this passes locally but fail on CI")
+    @Ignore("TODO Investigate why this passes locally but fail on CI")
     @Test
     fun postsContainError_snackbarShown() {
         val snackbarHostState = SnackbarHostState()

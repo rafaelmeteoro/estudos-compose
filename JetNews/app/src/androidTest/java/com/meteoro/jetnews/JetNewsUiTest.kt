@@ -23,13 +23,13 @@ class JetNewsUiTest {
         composeTestRule.launchJetNewsApp(InstrumentationRegistry.getInstrumentation().targetContext)
     }
 
-    // @Ignore("TODO Investigate why this passes locally but failed on CI")
+    @Ignore("TODO Investigate why this passes locally but failed on CI")
     @Test
     fun app_launches() {
         composeTestRule.onNodeWithText("JetNews").assertIsDisplayed()
     }
 
-    // @Ignore("TODO investigate why this passes locally but fail on CI")
+    @Ignore("TODO investigate why this passes locally but fail on CI")
     @Test
     fun app_opensArticle() {
         composeTestRule.onNodeWithText(text = "Manuel Vivo", substring = true).performClick()
