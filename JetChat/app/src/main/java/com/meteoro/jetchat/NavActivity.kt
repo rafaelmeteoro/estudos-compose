@@ -1,34 +1,29 @@
 package com.meteoro.jetchat
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
 import androidx.compose.material.rememberScaffoldState
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.os.bundleOf
 import androidx.core.view.WindowCompat
 import androidx.navigation.NavController
-import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import com.google.accompanist.insets.ProvideWindowInsets
 import com.meteoro.jetchat.components.JetChatScaffold
 import com.meteoro.jetchat.conversation.BackPressedHandler
 import com.meteoro.jetchat.conversation.LocalBackPressedDispatcher
 import com.meteoro.jetchat.databinding.ContentMainBinding
-import com.meteoro.jetchat.ui.theme.JetChatTheme
 import kotlinx.coroutines.launch
 
-class MainActivity : AppCompatActivity() {
+/**
+ * Main activity for the app.
+ * */
+class NavActivity : AppCompatActivity() {
 
     private val viewModel: MainViewModel by viewModels()
 

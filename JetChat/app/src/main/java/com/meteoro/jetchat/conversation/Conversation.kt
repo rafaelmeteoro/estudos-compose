@@ -1,35 +1,67 @@
 package com.meteoro.jetchat.conversation
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.paddingFrom
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Divider
+import androidx.compose.material.Icon
 import androidx.compose.material.LocalContentAlpha
+import androidx.compose.material.LocalContentColor
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.LastBaseline
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.insets.LocalWindowInsets
+import com.google.accompanist.insets.navigationBarsWithImePadding
+import com.google.accompanist.insets.statusBarsPadding
 import com.google.accompanist.insets.toPaddingValues
 import com.meteoro.jetchat.R
+import com.meteoro.jetchat.components.JetChatAppBar
 import com.meteoro.jetchat.data.exampleUiState
 import com.meteoro.jetchat.ui.theme.JetChatTheme
+import com.meteoro.jetchat.ui.theme.elevatedSurface
+import kotlinx.coroutines.launch
 
 /**
  * Entry point for a conversation screen.
@@ -54,16 +86,92 @@ fun ConversationContent(
     Surface(modifier = modifier) {
         Box(modifier = Modifier.fillMaxSize()) {
             Column(Modifier.fillMaxSize()) {
-                Text(text = "Conversation")
                 Messages(
                     messages = uiState.messages,
                     navigateToProfile = navigateToProfile,
                     modifier = Modifier.weight(1f),
                     scrollState = scrollState
                 )
+                UserInput(
+                    onMessageSent = { content ->
+                        uiState.addMessage(
+                            Message(authorMe, content, timeNow)
+                        )
+                    },
+                    resetScroll = {
+                        scope.launch {
+                            scrollState.scrollToItem(0)
+                        }
+                    },
+                    // Use navigationBarsWithImePadding(), to move the input panel above both the
+                    // navigation bar, and on-screen keyboard (IME)
+                    modifier = Modifier.navigationBarsWithImePadding()
+                )
             }
+            // Channel name bar floats above the messages
+            ChannelNameBar(
+                channelName = uiState.channelName,
+                channelMembers = uiState.channelMembers,
+                onNavIconPressed = onNavIconPressed,
+                // Use statusBarsPadding() to move the app bar content below the status bar
+                modifier = Modifier.statusBarsPadding()
+            )
         }
     }
+}
+
+@Composable
+fun ChannelNameBar(
+    channelName: String,
+    channelMembers: Int,
+    modifier: Modifier = Modifier,
+    onNavIconPressed: () -> Unit = {}
+) {
+    JetChatAppBar(
+        modifier = modifier,
+        onNavIconPressed = onNavIconPressed,
+        title = {
+            Column(
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Channel name
+                Text(
+                    text = channelName,
+                    style = MaterialTheme.typography.subtitle1
+                )
+                // Number of members
+                CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
+                    Text(
+                        text = stringResource(id = R.string.members, channelMembers),
+                        style = MaterialTheme.typography.caption
+                    )
+                }
+            }
+        },
+        actions = {
+            CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
+                // Search icon
+                Icon(
+                    imageVector = Icons.Outlined.Search,
+                    modifier = Modifier
+                        .clickable(onClick = {}) // TODO: Show not implemented dialog.
+                        .padding(horizontal = 12.dp, vertical = 16.dp)
+                        .height(24.dp),
+                    contentDescription = stringResource(id = R.string.search)
+                )
+                // Info icon
+                Icon(
+                    imageVector = Icons.Outlined.Info,
+                    modifier = Modifier
+                        .clickable(onClick = {}) // TODO: Show not implemented dialog.
+                        .padding(horizontal = 12.dp, vertical = 16.dp)
+                        .height(24.dp),
+                    contentDescription = stringResource(id = R.string.info)
+                )
+            }
+        }
+    )
 }
 
 const val ConversationTestTag = "ConversationTestTag"
@@ -108,8 +216,45 @@ fun Messages(
                         DayHeader("Today")
                     }
                 }
+
+                item {
+                    Message(
+                        onAuthorClick = { navigateToProfile(content.author) },
+                        msg = content,
+                        isUserMe = content.author == authorMe,
+                        isFirstMessageByAuthor = isFirstMessageByAuthor,
+                        isLastMessageByAuthor = isLastMessageByAuthor
+                    )
+                }
             }
         }
+        // Jumb to bottom shows up when user scrolls past a threshold.
+        // Convert to pixels:
+        val jumpThreshold = with(LocalDensity.current) {
+            JumpToBottomThreshold.toPx()
+        }
+
+        // Show the button if the first visible item is not the first one or if the offset is
+        // greater than the threshold.
+        val jumpToBottomButtonEnabled by remember {
+            derivedStateOf {
+                scrollState.firstVisibleItemIndex != 0 ||
+                        scrollState.firstVisibleItemScrollOffset > jumpThreshold
+            }
+        }
+
+        JumpToBottom(
+            // Only show if the scroller is not at the bottom
+            enabled = jumpToBottomButtonEnabled,
+            onClicked = {
+                scope.launch {
+                    // TODO: Replace with animatesSCrollToItem
+                    // https://issuetracker.google.com/181316785
+                    scrollState.scrollToItem(0)
+                }
+            },
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 }
 
@@ -141,6 +286,164 @@ private fun RowScope.DayHeaderLine() {
         color = MaterialTheme.colors.onSurface.copy(alpha = 0.12f)
     )
 }
+
+@Composable
+fun Message(
+    onAuthorClick: () -> Unit,
+    msg: Message,
+    isUserMe: Boolean,
+    isFirstMessageByAuthor: Boolean,
+    isLastMessageByAuthor: Boolean
+) {
+    // TODO: get image from msg.author
+    val painter = if (isUserMe) {
+        painterResource(id = R.drawable.ali)
+    } else {
+        painterResource(id = R.drawable.someone_else)
+    }
+    val borderColor = if (isUserMe) {
+        MaterialTheme.colors.primary
+    } else {
+        MaterialTheme.colors.secondary
+    }
+
+    val spaceBetweenAuthors = if (isLastMessageByAuthor) Modifier.padding(top = 8.dp) else Modifier
+    Row(modifier = spaceBetweenAuthors) {
+        if (isLastMessageByAuthor) {
+            // Avatar
+            Image(
+                modifier = Modifier
+                    .clickable(onClick = onAuthorClick)
+                    .padding(horizontal = 16.dp)
+                    .size(42.dp)
+                    .border(1.5.dp, borderColor, CircleShape)
+                    .clip(CircleShape)
+                    .align(Alignment.Top),
+                painter = painter,
+                contentScale = ContentScale.Crop,
+                contentDescription = null
+            )
+        } else {
+            // Space under avatar
+            Spacer(modifier = Modifier.width(74.dp))
+        }
+        AuthorAndTextMessage(
+            msg = msg,
+            isFirstMessageByAuthor = isFirstMessageByAuthor,
+            isLastMessageByAuthor = isLastMessageByAuthor,
+            modifier = Modifier
+                .padding(end = 16.dp)
+                .weight(1f)
+        )
+    }
+}
+
+@Composable
+fun AuthorAndTextMessage(
+    msg: Message,
+    isFirstMessageByAuthor: Boolean,
+    isLastMessageByAuthor: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        if (isLastMessageByAuthor) {
+            AuthorNameTimestamp(msg)
+        }
+        ChatItemBubble(msg, isFirstMessageByAuthor)
+        if (isFirstMessageByAuthor) {
+            // Last bubble before next author
+            Spacer(modifier = Modifier.height(8.dp))
+        } else {
+            // Between bubbles
+            Spacer(modifier = Modifier.height(4.dp))
+        }
+    }
+}
+
+@Composable
+private fun AuthorNameTimestamp(msg: Message) {
+    // Combine author and timestamp for a11y.
+    Row(modifier = Modifier.semantics(mergeDescendants = true) {}) {
+        Text(
+            text = msg.author,
+            style = MaterialTheme.typography.subtitle1,
+            modifier = Modifier
+                .alignBy(LastBaseline)
+                .paddingFrom(LastBaseline, after = 8.dp) // Space to 1st bubble
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
+            Text(
+                text = msg.timestamp,
+                style = MaterialTheme.typography.caption,
+                modifier = Modifier.alignBy(LastBaseline)
+            )
+        }
+    }
+}
+
+@Composable
+fun ChatItemBubble(
+    message: Message,
+    lastMessageByAuthor: Boolean
+) {
+    val backgroundBubbleColor =
+        if (MaterialTheme.colors.isLight) {
+            Color(0xFFF5F5F5)
+        } else {
+            MaterialTheme.colors.elevatedSurface(2.dp)
+        }
+    val bubbleShape = if (lastMessageByAuthor) LastChatBubbleShape else ChatBubbleShape
+    Column {
+        Surface(color = backgroundBubbleColor, shape = bubbleShape) {
+            ClickableMessage(message = message)
+        }
+
+        message.image?.let {
+            Spacer(modifier = Modifier.height(4.dp))
+            Surface(color = backgroundBubbleColor, shape = bubbleShape) {
+                Image(
+                    painter = painterResource(id = it),
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.size(160.dp),
+                    contentDescription = stringResource(id = R.string.attached_image)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ClickableMessage(message: Message) {
+    val uriHandler = LocalUriHandler.current
+    val styledMessage = messageFormatter(text = message.content)
+
+    ClickableText(
+        text = styledMessage,
+        style = MaterialTheme.typography.body1.copy(color = LocalContentColor.current),
+        modifier = Modifier.padding(8.dp),
+        onClick = {
+            styledMessage
+                .getStringAnnotations(start = it, end = it)
+                .firstOrNull()
+                ?.let { annotation ->
+                    when (annotation.tag) {
+                        SymbolAnnotationType.LINK.name -> uriHandler.openUri(annotation.item)
+                        // TODO(yrezgui): Open profile screen when click PERSON tag
+                        // (e.g. @aliconors)
+                        else -> Unit
+                    }
+                }
+        }
+    )
+}
+
+private val ChatBubbleShape = RoundedCornerShape(0.dp, 8.dp, 8.dp, 0.dp)
+private val LastChatBubbleShape = RoundedCornerShape(0.dp, 8.dp, 8.dp, 8.dp)
+
+private val JumpToBottomThreshold = 56.dp
+
+private fun ScrollState.atBottom(): Boolean = value == 0
 
 @Preview
 @Composable

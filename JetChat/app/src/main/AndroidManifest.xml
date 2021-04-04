@@ -9,7 +9,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.JetChat.NoActionBar">
         <activity
-            android:name=".MainActivity"
+            android:name=".NavActivity"
             android:label="@string/app_name"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
