@@ -1,18 +1,41 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
+import com.meteoro.jetsnack.buildsrc.Libs
+
 buildscript {
-    ext {
-        compose_version = '1.0.0-beta01'
-    }
     repositories {
         google()
         mavenCentral()
+        jcenter()
     }
     dependencies {
-        classpath "com.android.tools.build:gradle:7.0.0-alpha14"
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.32"
+        classpath Libs.androidGradlePlugin
+        classpath Libs.Kotlin.gradlePlugin
+    }
+}
 
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
+subprojects {
+    repositories{
+        google()
+        mavenCentral()
+        jcenter()
+
+        if (!Libs.AndroidX.Compose.snapshot.isEmpty()) {
+            maven { url "https://androidx.dev/snapshots/builds/${Libs.AndroidX.Compose.snapshot}/artifacts/repository/" }
+        }
+        if (Libs.Accompanist.version.endsWith("SNAPSHOT")) {
+            maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+        }
+    }
+
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+        kotlinOptions {
+            jvmTarget = '1.8'
+            allWarningsAsErrors = false
+            // Opt-in to experimental compose APIs
+            freeCompilerArgs += '-Xopt-in=kotlin.RequiresOptIn'
+            // Enable experimental coroutines APIs, including collectAsState()
+            freeCompilerArgs += '-Xopt-in=kotlinx.coroutines.ExperimentalCoroutinesApi'
+        }
     }
 }
 
